@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neon Ping Pong</title>
+<style>
+  html,body{height:100%;margin:0}
+  body{background:radial-gradient(circle at 50% 30%,#1a0f3a,#07050f 70%);color:#cfe9ff;
+    font-family:ui-monospace,Menlo,Consolas,monospace;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:14px;padding:12px}
+  canvas{width:min(100%,900px);aspect-ratio:9/5;border:2px solid #7a5cff;border-radius:10px;
+    box-shadow:0 0 30px #7a5cff88,0 0 80px #ff2bd633;touch-action:none;background:#07050f}
+  p{margin:0;font-size:.85rem;text-align:center;line-height:1.6;opacity:.85}
+</style>
+</head>
+<body>
+<canvas id="g" width="900" height="500" aria-label="Neon ping pong game"></canvas>
+<p id="hint"></p>
+
+<script>
+const cv=document.getElementById('g'),ctx=cv.getContext('2d'),W=900,H=500;
+const PW=14,PH=90,R=9,WIN=7,CYAN='#00f0ff',PINK='#ff2bd6',FONT='ui-monospace,Menlo,Consolas,monospace';
+const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const L={x:26,y:H/2-PH/2},Rt={x:W-26-PW,y:H/2-PH/2};
+const ball={x:W/2,y:H/2,vx:0,vy:0,trail:[]};
+const levels=[['Easy',3.4],['Normal',4.8],['Hard',6.4]];
+let lvl=1,two=false,st='ready',score=[0,0],rally=0,best=0,shake=0,flash=0,msg='',keys={},P=[],ac;
+const hint=document.getElementById('hint');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+function beep(f,d,t='square',v=.05){try{ac=ac||new AudioContext();
+  const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;
+  o.type=t;o.frequency.setValueAtTime(f,n);g.gain.setValueAtTime(v,n);
+  g.gain.exponentialRampToValueAtTime(.0001,n+d);
+  o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+d);}catch(e){}}
+
+function ui(){hint.innerHTML=(two?'Left: W/S &nbsp;
